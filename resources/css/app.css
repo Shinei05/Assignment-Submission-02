@@ -1,0 +1,39 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  :root {
+    --color-primary: #2563eb; /* Blue 600 */
+    --color-primary-hover: #1d4ed8; /* Blue 700 */
+    --color-secondary: #475569; /* Slate 600 */
+    --color-background: #f1f5f9; /* Slate 100 */
+    --color-surface: #ffffff;
+    --color-surface-hover: #f8fafc;
+    --color-text-main: #0f172a; /* Slate 900 */
+    --color-text-muted: #64748b; /* Slate 500 */
+    --color-border: #e2e8f0; /* Slate 200 */
+    --color-border-hover: #cbd5e1; /* Slate 300 */
+    --color-success: #16a34a; /* Green 600 */
+    --color-danger: #dc2626; /* Red 600 */
+    --sidebar-width: 280px;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text-main);
+    overflow-x: hidden;
+  }
+
+  .main-content {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.3s ease-in-out;
+  }
+
+  @media (max-width: 1024px) {
+    .main-content {
+      margin-left: 0;
+    }
+  }
+}
