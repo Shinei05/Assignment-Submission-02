@@ -21,7 +21,8 @@ class TaskService
     public function createTask(int $classId, array $data): Task
     {
         $referenceFiles = $data['reference_files'] ?? [];
-        unset($data['reference_files']);
+        $data = $this->applyDueTime($data);
+        unset($data['reference_files'], $data['due_time']);
 
         $data['class_id'] = $classId;
         $task = $this->taskRepository->create($data);
@@ -34,7 +35,8 @@ class TaskService
     public function updateTask(int $taskId, array $data): bool
     {
         $referenceFiles = $data['reference_files'] ?? [];
-        unset($data['reference_files']);
+        $data = $this->applyDueTime($data);
+        unset($data['reference_files'], $data['due_time']);
 
         $task = $this->taskRepository->find($taskId);
         $updated = $this->taskRepository->update($task, $data);
@@ -75,5 +77,14 @@ class TaskService
                 'original_file_name' => $referenceFile->getClientOriginalName(),
             ]);
         }
+    }
+
+    private function applyDueTime(array $data): array
+    {
+        if (!empty($data['due_date']) && !empty($data['due_time'])) {
+            $data['due_date'] = "{$data['due_date']} {$data['due_time']}";
+        }
+
+        return $data;
     }
 }

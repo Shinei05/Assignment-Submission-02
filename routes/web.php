@@ -4,12 +4,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\ClassController as StudentClassController;
 use App\Http\Controllers\Student\AssignmentController as StudentAssignmentController;
-use App\Http\Controllers\Student\CalendarController as StudentCalendarController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\ClassController as TeacherClassController;
 use App\Http\Controllers\Teacher\TaskController as TeacherTaskController;
 use App\Http\Controllers\Teacher\SubmissionController as TeacherSubmissionController;
-use App\Http\Controllers\Teacher\CalendarController as TeacherCalendarController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,8 +31,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/assignments/{task}/submit', [StudentAssignmentController::class, 'submit'])->name('assignments.submit');
         Route::get('/reference-files/{referenceFile}/download', [StudentAssignmentController::class, 'downloadReferenceFile'])->name('reference-files.download');
         Route::get('/submissions/{submission}/download', [StudentAssignmentController::class, 'downloadSubmission'])->name('submissions.download');
-        
-        Route::get('/calendar', [StudentCalendarController::class, 'index'])->name('calendar');
+        Route::delete('/submissions/{submission}', [StudentAssignmentController::class, 'destroySubmission'])->name('submissions.destroy');
     });
 
     Route::middleware('role:teacher')->prefix('teacher')->name('teacher.')->group(function () {
@@ -54,8 +51,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/submissions/{submission}', [TeacherSubmissionController::class, 'show'])->name('submissions.show');
         Route::post('/submissions/{submission}/mark-as-checked', [TeacherSubmissionController::class, 'markAsChecked'])->name('submissions.mark-as-checked');
         Route::get('/submissions/{submission}/download', [TeacherSubmissionController::class, 'download'])->name('submissions.download');
-        
-        Route::get('/calendar', [TeacherCalendarController::class, 'index'])->name('calendar');
     });
 });
 

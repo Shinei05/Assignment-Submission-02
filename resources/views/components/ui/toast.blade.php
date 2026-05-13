@@ -45,6 +45,8 @@
                     $statusMsg = $statusMessages[session('status')] ?? session('status');
                 @endphp
                 this.open(@js($statusMsg), 'success');
+            @elseif($errors->any())
+                this.open(@js($errors->first()), 'danger');
             @endif
 
             window.addEventListener('notify', e => {

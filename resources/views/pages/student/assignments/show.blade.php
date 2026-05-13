@@ -63,7 +63,8 @@
             <div class="space-y-6">
                 @php
                     $isPastDue = $task->due_date && now()->greaterThan($task->due_date);
-                    $canResubmit = !$task->due_date || now()->lessThanOrEqualTo($task->due_date);
+                    $isGraded = $submission && $submission->status === 'checked';
+                    $canResubmit = (!$task->due_date || now()->lessThanOrEqualTo($task->due_date)) && !$isGraded;
                     $showUploadForm = !$submission || $canResubmit;
                 @endphp
 
@@ -116,6 +117,10 @@
                         </a>
 
                         @if($showUploadForm)
+                            <button type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-remove-submission')" class="mb-4 w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-danger text-danger rounded-lg font-semibold hover:bg-danger hover:text-surface transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                Remove Submission
+                            </button>
                             <p class="text-xs text-text-muted mb-3">You can replace this file until the due date.</p>
                         @endif
                     @else
@@ -176,29 +181,24 @@
         </div>
     </div>
 
-    <x-modal name="confirm-submit-assignment" focusable>
-        <div class="p-6">
-            <h3 class="text-lg font-bold text-text-main mb-2">Confirm Submission</h3>
-            <p class="text-sm text-text-muted mb-4">
-                @if($isPastDue && !$submission)
-                    This file will be submitted and marked as late. Continue?
-                @else
-                    Are you sure you want to submit this file now?
-                @endif
-            </p>
+    <x-ui.confirm-modal
+        name="confirm-submit-assignment"
+        title="Confirm Submission"
+        message=""
+        type="info"
+        confirmText="Confirm Submit"
+        confirmAction="document.getElementById('submission-upload-form').submit();"
+    />
 
-            <div class="flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    Cancel
-                </x-secondary-button>
-                <button
-                    type="button"
-                    class="px-4 py-2 bg-primary hover:bg-primary-hover text-surface rounded text-sm font-medium transition-colors"
-                    onclick="document.getElementById('submission-upload-form').submit();"
-                >
-                    Confirm Submit
-                </button>
-            </div>
-        </div>
-    </x-modal>
+    @if($submission && $showUploadForm)
+        <x-ui.confirm-modal
+            name="confirm-remove-submission"
+            title="Remove Submission"
+            message="Remove your turned-in file so you can upload a different one?"
+            type="danger"
+            confirmText="Remove"
+            :action="route('student.submissions.destroy', $submission->id)"
+            method="DELETE"
+        />
+    @endif
 </x-app-layout>

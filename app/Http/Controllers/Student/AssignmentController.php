@@ -127,4 +127,27 @@ class AssignmentController extends Controller
             $submission->original_file_name ?: basename($submission->file_path)
         );
     }
+
+    public function destroySubmission(Request $request, int $submissionId)
+    {
+        $submission = Submission::with('task')->findOrFail($submissionId);
+
+        if ((int) $submission->student_id !== (int) $request->user()->id) {
+            abort(403);
+        }
+
+        if ($submission->task->due_date && now()->greaterThan($submission->task->due_date)) {
+            return back()->withErrors([
+                'submission_file' => 'Submission removal is closed because the due date has passed.',
+            ]);
+        }
+
+        if ($submission->file_path && Storage::disk('public')->exists($submission->file_path)) {
+            Storage::disk('public')->delete($submission->file_path);
+        }
+
+        $submission->delete();
+
+        return redirect()->back()->with('success', 'Submission removed. You can upload a different file now.');
+    }
 }

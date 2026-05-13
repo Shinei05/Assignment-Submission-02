@@ -57,7 +57,7 @@
                                                 <p class="text-sm text-text-muted mt-1">{{ Str::limit($task->description, 60) }}</p>
                                                 <div class="mt-2 flex space-x-4 text-xs text-text-muted">
                                                     @if($task->due_date)
-                                                        <span>Due: {{ \Carbon\Carbon::parse($task->due_date)->format('M d, Y') }}</span>
+                                                        <span>Due: {{ \Carbon\Carbon::parse($task->due_date)->format('M d, Y g:i A') }}</span>
                                                     @endif
                                                     @if($task->max_attempts)
                                                         <span>Attempts: {{ $task->max_attempts }}</span>
@@ -88,13 +88,22 @@
 
     <!-- Add Students Modal -->
     <x-modal name="add-student" focusable>
-        <form method="post" action="{{ route('teacher.classes.students.add', $schoolClass->id) }}" class="flex flex-col max-h-[85vh]">
+        <form method="post" action="{{ route('teacher.classes.students.add', $schoolClass->id) }}" class="flex flex-col max-h-[85vh]" x-data="{ selectAll: false }">
             @csrf
             
-            <div class="p-6 pb-4 border-b border-border shrink-0">
+            <div class="p-6 pb-4 border-b border-border shrink-0 flex items-center justify-between gap-4">
                 <h2 class="text-lg font-medium text-text-main">
                     {{ __('Add Students to Class') }}
                 </h2>
+
+                <button type="button"
+                    class="px-3 py-1.5 border border-border text-text-main rounded text-xs font-semibold tracking-wider uppercase hover:bg-background transition-colors"
+                    x-on:click="
+                        selectAll = !selectAll;
+                        $root.querySelectorAll('input[name=\'student_ids[]\']:not(:disabled)').forEach((checkbox) => checkbox.checked = selectAll);
+                    "
+                    x-text="selectAll ? '{{ __('Clear All') }}' : '{{ __('Select All') }}'">
+                </button>
             </div>
 
             <div class="p-6 overflow-y-auto flex-1 space-y-2 bg-background/30">
@@ -111,7 +120,7 @@
                     @endphp
                     <div class="flex items-center justify-between p-3 border border-border rounded {{ $isEnrolled ? 'bg-background opacity-60' : 'bg-surface hover:bg-background' }}">
                         <label class="flex items-center space-x-3 cursor-pointer w-full">
-                            <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" class="rounded border-border text-primary shadow-sm focus:ring-primary" {{ $isEnrolled ? 'disabled checked' : '' }}>
+                            <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" class="rounded border-border text-primary shadow-sm focus:ring-primary" x-on:change="selectAll = false" {{ $isEnrolled ? 'disabled checked' : '' }}>
                             <div class="flex flex-col">
                                 <span class="text-sm font-medium text-text-main {{ $isEnrolled ? 'line-through' : '' }}">{{ $student->name }}</span>
                                 <span class="text-xs text-text-muted">{{ $student->email }}</span>
@@ -159,11 +168,16 @@
                     <x-input-error :messages="$errors->get('description')" class="mt-1 text-danger" />
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" x-data="{ dueDate: @js(old('due_date', '')), today: @js(now()->format('Y-m-d')), currentTime: @js(now()->format('H:i')) }">
                     <div>
-                        <x-input-label for="due_date" value="{{ __('Due Date (Optional)') }}" />
-                        <x-text-input id="due_date" name="due_date" type="date" class="mt-1 block w-full" />
+                        <x-input-label for="due_date" value="{{ __('Due Date') }}" />
+                        <x-text-input id="due_date" name="due_date" type="date" class="mt-1 block w-full" min="{{ now()->format('Y-m-d') }}" x-model="dueDate" :value="old('due_date')" required />
                         <x-input-error :messages="$errors->get('due_date')" class="mt-1 text-danger" />
+                    </div>
+                    <div>
+                        <x-input-label for="due_time" value="{{ __('Submission Time') }}" />
+                        <x-text-input id="due_time" name="due_time" type="time" class="mt-1 block w-full" x-bind:min="dueDate === today ? currentTime : null" :value="old('due_time')" required />
+                        <x-input-error :messages="$errors->get('due_time')" class="mt-1 text-danger" />
                     </div>
                     <div>
                         <x-input-label for="max_attempts" value="{{ __('Max Attempts (Optional)') }}" />
@@ -216,11 +230,16 @@
                         <x-input-error :messages="$errors->get('description')" class="mt-1 text-danger" />
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" x-data="{ dueDate: @js(old('due_date', $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') : '')), today: @js(now()->format('Y-m-d')), currentTime: @js(now()->format('H:i')) }">
                         <div>
-                            <x-input-label for="due_date_{{ $task->id }}" value="{{ __('Due Date (Optional)') }}" />
-                            <x-text-input id="due_date_{{ $task->id }}" name="due_date" type="date" class="mt-1 block w-full" :value="old('due_date', $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') : '')" />
+                            <x-input-label for="due_date_{{ $task->id }}" value="{{ __('Due Date') }}" />
+                            <x-text-input id="due_date_{{ $task->id }}" name="due_date" type="date" class="mt-1 block w-full" min="{{ now()->format('Y-m-d') }}" x-model="dueDate" :value="old('due_date', $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') : '')" required />
                             <x-input-error :messages="$errors->get('due_date')" class="mt-1 text-danger" />
+                        </div>
+                        <div>
+                            <x-input-label for="due_time_{{ $task->id }}" value="{{ __('Submission Time') }}" />
+                            <x-text-input id="due_time_{{ $task->id }}" name="due_time" type="time" class="mt-1 block w-full" x-bind:min="dueDate === today ? currentTime : null" :value="old('due_time', $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('H:i') : '')" required />
+                            <x-input-error :messages="$errors->get('due_time')" class="mt-1 text-danger" />
                         </div>
                         <div>
                             <x-input-label for="max_attempts_{{ $task->id }}" value="{{ __('Max Attempts (Optional)') }}" />
