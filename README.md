@@ -122,10 +122,10 @@ erDiagram
 
 ## 👥 Group Members
 
-- **Member 1 Name** - [Role/ID]
-- **Member 2 Name** - [Role/ID]
-- **Member 3 Name** - [Role/ID]
-- **Member 4 Name** - [Role/ID]
+- **Gainsan, Yendell, D.** - [FullStack Developer/Project Lead]
+- **Darapiza, Joanna Mae, D.** - [UI/UX Designer]
+- **Gacayan, Rhic John, C.** - [QA Tester]
+- **Castillo, Leo Angelo, A.** - [QA Tester]
 
 ---
-*Built with ❤️ using Laravel & TailwindCSS.*
+*Built using Laravel & TailwindCSS.*
